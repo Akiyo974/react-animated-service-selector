@@ -16,3 +16,7 @@ Ce projet est une application Web en React qui permet de sélectionner des servi
 - **CDN react-animations** : Pour ajouter des animations CSS en ligne (inline styles) aux composants.
 - **Animate.css** : Intégré pour les animations CSS.
 - **Babel** : Pour compiler le JSX et rendre le projet compatible dans le navigateur.
+
+---
+
+Ce projet a été réalisé par Christen Dijoux.
