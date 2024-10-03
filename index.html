@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <title>React Animations avec Animate.css</title>
+  <head>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  </head>
+  <style>
+    @import url(https://fonts.googleapis.com/css?family=Cookie);
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font: 15px/1.3 'Open Sans', sans-serif; color: #5e5b64; text-align: center; }
+    form { background-color: #61a1bc; border-radius: 2px; box-shadow: 0 1px 1px #ccc; width: 500px; padding: 35px 60px; margin: 50px auto; }
+    form h1 { color: #fff; font-size: 64px; font-family: 'Cookie', cursive; font-weight: normal; line-height: 1; text-shadow: 0 3px 0 rgba(0,0,0,0.1); }
+    form ul { list-style: none; color: #fff; font-size: 20px; font-weight: bold; text-align: left; margin: 20px 0 15px; padding: 0; }
+    form ul li { padding: 20px 30px; background-color: #e35885; margin-bottom: 8px; box-shadow: 0 1px 1px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.3s, transform 0.2s; }
+    form ul li:hover { transform: scale(1.05); }
+    form ul li span { float: right; }
+    form ul li.actif { background-color: #8ec16d; }
+    form ul li.actif::before { content: '✔'; margin-right: 10px; }
+    form ul li.surligne { background-color: #ffeb3b; }
+    div.total { border-top: 1px solid rgba(255,255,255,0.5); padding: 15px 30px; font-size: 20px; font-weight: bold; text-align: left; color: #fff; transition: background-color 0.3s; }
+    div.total span { float: right; transition: transform 0.3s; }
+    div.total.surlignage { background-color: #ffc107; transition: background-color 0.3s; }
+    .conteneur-barre-progress { margin: 20px 0; }
+    .barre-progress { background-color: #e35885; height: 20px; border-radius: 10px; overflow: hidden; }
+    .interieur-barre-progress { height: 100%; width: 0; background: linear-gradient(90deg, #8ec16d, #61a1bc); transition: width 0.3s; }
+    .controles { margin-bottom: 20px; }
+    .controles input[type="text"] { padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; width: calc(100% - 22px); }
+    .controles button { background-color: #e35885; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; margin-right: 10px; }
+    .controles button:hover { background-color: #c8466b; }
+    .message { font-size: 20px; margin-top: 10px; color: #fff; }
+    .compte-services { color: #fff; font-size: 18px; margin-bottom: 10px; }
+  </style>
+  <body>
+    <div id="racine"></div>        
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function App(props) {
+            const [services, setServices] = useState([
+                { name: 'Développement Web', price: 300, active: true },
+                { name: 'Design', price: 400, active: false },
+                { name: 'Intégration', price: 250, active: false },
+                { name: 'Formation', price: 220, active: false }
+            ]);
+
+            const [surlignage, setSurlignage] = useState(false);
+            const [recherche, setRecherche] = useState('');
+
+            // Fonction pour basculer l'état actif d'un service
+            const basculerService = (index) => {
+                const servicesMisAJour = services.map((service, i) => {
+                    if (i === index) {
+                        return { ...service, active: !service.active, animate: true };
+                    }
+                    return { ...service, animate: false };
+                });
+                setServices(servicesMisAJour);
+                setSurlignage(true);
+            };
+
+            // Réinitialise tous les services comme inactifs
+            const reinitialiserServices = () => {
+                const servicesMisAJour = services.map(service => ({ ...service, active: false, animate: false }));
+                setServices(servicesMisAJour);
+                setSurlignage(true);
+            };
+
+            // Sélectionne des services de façon aléatoire
+            const selectionAleatoireServices = () => {
+                const servicesMisAJour = services.map(service => ({
+                    ...service,
+                    active: Math.random() < 0.5,
+                    animate: Math.random() < 0.5
+                }));
+                setServices(servicesMisAJour);
+                setSurlignage(true);
+            };
+
+            // Supprime le surlignage après un délai
+            useEffect(() => {
+                if (surlignage) {
+                    const timeout = setTimeout(() => setSurlignage(false), 500);
+                    return () => clearTimeout(timeout);
+                }
+            }, [surlignage]);
+
+            // Calcule le total des services sélectionnés
+            const total = services
+                .filter(service => service.active)
+                .reduce((sum, service) => sum + service.price, 0);
+
+            // Calcul du pourcentage de progression
+            const pourcentageProgress = Math.min((total / 1000) * 100, 100);
+
+            // Filtre les services en fonction de la recherche
+            const servicesFiltres = services.filter(service =>
+                service.name.toLowerCase().includes(recherche.toLowerCase())
+            );
+
+            // Obtient un message basé sur le total
+            const obtenirMessage = (total) => {
+                if (total === 0) return "Choisis un service";
+                if (total < 500) return "Bon choix!";
+                if (total < 1000) return "Presqu'à la fin!";
+                return "Bravo!";
+            };
+
+            return (
+                <form id="principal">
+                    <h1>Services</h1>
+                    <div className="controles">
+                        <input
+                            type="text"
+                            placeholder="Rechercher un service..."
+                            value={recherche}
+                            onChange={(e) => setRecherche(e.target.value)}
+                        />
+                        <button type="button" onClick={reinitialiserServices}>
+                            Réinitialiser
+                        </button>
+                        <button type="button" onClick={selectionAleatoireServices}>
+                            Sélection Aléatoire
+                        </button>
+                    </div>
+                    <div className="compte-services">
+                        Services sélectionnés: {services.filter(service => service.active).length}
+                    </div>
+                    <ul>
+                        {servicesFiltres.map((service, index) => (
+                            <li
+                                key={index}
+                                className={`${
+                                    service.active ? 'actif' : ''
+                                } ${service.animate ? 'animate__animated animate__bounce' : ''} ${
+                                    recherche && service.name.toLowerCase().includes(recherche.toLowerCase())
+                                        ? 'surligne'
+                                        : ''
+                                }`}
+                                onClick={() => basculerService(index)}
+                            >
+                                {service.name.split(new RegExp(`(${recherche})`, 'gi')).map((part, i) =>
+                                    part.toLowerCase() === recherche.toLowerCase() ? <mark key={i}>{part}</mark> : part
+                                )}
+                                <span>{service.price} $</span>
+                            </li>
+                        ))}
+                    </ul>
+                    <div className={`total ${surlignage ? 'surlignage' : ''}`}>
+                        Total: <span style={{ transform: surlignage ? 'scale(1.2)' : 'scale(1)' }}>{total} $</span>
+                    </div>
+                    <div className="conteneur-barre-progress">
+                        <div className="barre-progress">
+                            <div
+                                className="interieur-barre-progress"
+                                style={{ width: `${pourcentageProgress}%` }}
+                            ></div>
+                        </div>
+                    </div>
+                    <div className="message">
+                        {obtenirMessage(total)}
+                    </div>
+                </form>
+            );
+        }
+
+        const racine = ReactDOM.createRoot(document.getElementById('racine'));
+        racine.render(<App />);
+    </script>
+  </body>
+</html>
